@@ -13,9 +13,12 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.IO;
-using System.IO.Ports;
 using System.Diagnostics;
 using System.Timers;
+using System.IO.Ports;
+using System.Net.Sockets;
+using System.Net.NetworkInformation;
+using System.Threading;
 
 namespace Scheduler
 {
@@ -25,36 +28,84 @@ namespace Scheduler
     public partial class MainWindow : Window
     {
         List<SerialPort> arduionPortList = new();
-        Timer timer = new(1000);
+        System.Timers.Timer timer = new(1000);
+
+        SynchronizationContext? synchronizationContext = SynchronizationContext.Current;
+
+        Server server;
+
+        int TempExpValue = 26;
+        int HumidityExpValue = 50;
+
+        bool ADPower = false;
+        bool HDPower = false;
+        bool ACPower = false;
 
         public MainWindow()
         {
             InitializeComponent();
             arduionPortList = ScanPorts();
-            if (arduionPortList == null)
-            {
-                ShowError();
-            }
+
             timer.Elapsed += Timer_Elapsed;
+            timer.AutoReset = true;
+            timer.Start();
+
+            server = new(logArea: serverLog);
+            server.Start();
         }
 
         private void Timer_Elapsed(object? sender, ElapsedEventArgs e)
         {
-            if (arduionPortList.Count != 0)
+            synchronizationContext?.Post(o =>
             {
-                foreach (var item in arduionPortList)
+                if (arduionPortList.Count != 0)
                 {
-                    if (GetRawData(item, out string raws))
+                    Trace.WriteLine("捕获到arduino");
+                    sensorState.Content = "传感器正常";
+                    sensorState.Foreground = new SolidColorBrush(Color.FromRgb(0, 0, 0));
+                    foreach (var item in arduionPortList)
                     {
-                        RawHandler(raws);
+                        if (GetRawData(item, out string raws))
+                        {
+                            RawHandler(raws);
+                        }
+
+                        try
+                        {
+                            item.WriteLine("GetData");
+                        }
+                        catch (Exception e)
+                        {
+                            arduionPortList.Remove(item);
+                            Trace.TraceError(e.Message);
+                            return;
+                        }
                     }
-                    item.Write("GetData");
                 }
-            }
-            else
-            {
-                arduionPortList = ScanPorts();
-            }
+                else
+                {
+                    sensorState.Content = "传感器离线";
+                    sensorState.Foreground = new SolidColorBrush(Color.FromRgb(255, 0, 0));
+
+                    if (SensorDatas.instance != null)
+                    {
+                        SensorDatas.instance.IsDataValid = false;
+                    }
+
+                    arduionPortList = ScanPorts();
+                }
+
+                if (NetworkInterface.GetIsNetworkAvailable())
+                {
+                    netState.Content = "网络正常";
+                    netState.Foreground = new SolidColorBrush(Color.FromRgb(0, 0, 0));
+                }
+                else
+                {
+                    netState.Content = "连接异常";
+                    netState.Foreground = new SolidColorBrush(Color.FromRgb(255, 0, 0));
+                }
+            }, null);
         }
 
         /// <summary>
@@ -64,6 +115,7 @@ namespace Scheduler
         List<SerialPort> ScanPorts()
         {
             string[] allPorts = SerialPort.GetPortNames();
+            Trace.WriteLine(allPorts.Length);
             List<SerialPort> portList = new();
 
             // 遍历所有串口并尝试连接
@@ -72,15 +124,21 @@ namespace Scheduler
                 try
                 {
                     SerialPort serialPort = new SerialPort(port, 9600);
+                    Trace.WriteLine("portName:" + port);
                     serialPort.Open();
+                    Trace.WriteLine("端口已打开");
                     serialPort.WriteLine("GetArduino"); // 向Arduino发送一条消息
-                    string response = serialPort.ReadLine(); // 读取来自Arduino的响应
+                    string response = serialPort.ReadExisting(); // 读取来自Arduino的响应
                     if (response.Contains("Arduino")) // 检查响应是否包含"Arduino"字样
                     {
                         Trace.WriteLine("Arduino已连接到" + port);
                         portList.Add(serialPort);
                     }
-                    serialPort.Close();
+                    else
+                    {
+                        serialPort.Close();
+                    }
+
                 }
                 catch (Exception e)
                 {
@@ -94,21 +152,40 @@ namespace Scheduler
 
         bool GetRawData(SerialPort port, out string rawString)
         {
-            string raw = port.ReadExisting();
-            if (raw.Contains(":"))
+            try
             {
-                rawString = raw;
+                string raw = port.ReadExisting().Trim();
+                if (raw.Contains(':'))
+                {
+                    rawString = raw;
+                }
+                else
+                {
+                    rawString = "";
+                }
+                return raw != "";
             }
-            else
+            catch (Exception e)
             {
+                Trace.TraceError(e.Message);
                 rawString = "";
+                return false;
             }
-            return raw != "";
+
         }
 
         SensorDatas RawHandler(string rawData)
         {
-            SensorDatas sensorDatas = new SensorDatas();
+            SensorDatas sensorDatas;
+            if (SensorDatas.instance == null)
+            {
+                sensorDatas = new SensorDatas();
+            }
+            else
+            {
+                sensorDatas = SensorDatas.instance;
+            }
+
             string[] sDatas = rawData.Split("@");
             foreach (var item in sDatas)
             {
@@ -118,10 +195,10 @@ namespace Scheduler
                     switch (dataPair[0])
                     {
                         case "Humidity":
-                            sensorDatas.Humidity = Convert.ToInt32(dataPair[1]);
+                            sensorDatas.Humidity = Convert.ToDouble(dataPair[1].Trim());
                             break;
                         case "Temperature":
-                            sensorDatas.Temperature = Convert.ToInt32(dataPair[1]);
+                            sensorDatas.Temperature = Convert.ToDouble(dataPair[1]);
                             break;
                         case "AirQuality":
                             sensorDatas.AirQuality = Convert.ToInt32(dataPair[1]);
@@ -129,6 +206,9 @@ namespace Scheduler
                         default:
                             break;
                     }
+
+                    SensorDatas.instance = sensorDatas;
+                    DataHandler(sensorDatas);
                 }
                 catch (Exception e)
                 {
@@ -141,17 +221,99 @@ namespace Scheduler
 
         void DataHandler(SensorDatas datas)
         {
-
+            tempratureEnv.Content = string.Format("{0}°C", datas.Temperature);
+            humidityEnv.Content = string.Format("{0}%", datas.Humidity);
+            airQuality.Content = datas.AirQuality;
         }
 
-        void ShowError()
+        private void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
-
+            Timer_Elapsed(null, null);
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            server.Stop();
+            Application.Current.Shutdown();
+        }
 
+        private void Temp_lower_Click(object sender, RoutedEventArgs e)
+        {
+            if (TempExpValue <= 16)
+            {
+                return;
+            }
+            TempExpValue--;
+            temperatureExpect.Content = string.Format("{0}°C", TempExpValue);
+        }
+
+        private void Temp_higher_Click(object sender, RoutedEventArgs e)
+        {
+            if (TempExpValue >= 30)
+            {
+                return;
+            }
+            TempExpValue++;
+            temperatureExpect.Content = string.Format("{0}°C", TempExpValue);
+        }
+
+        private void airConditionerSwitch_Click(object sender, RoutedEventArgs e)
+        {
+            ADPower = !ADPower;
+            if (!ADPower)
+            {
+                airConditionerSwitch.Content = "已关机";
+            }
+            else
+            {
+                airConditionerSwitch.Content = "正在运行";
+            }
+        }
+
+        private void humidity_lower_Click(object sender, RoutedEventArgs e)
+        {
+            if (HumidityExpValue <= 0)
+            {
+                return;
+            }
+            HumidityExpValue -= 10;
+            humidityExpect.Content = string.Format("{0}%", HumidityExpValue);
+        }
+
+        private void humidityControlerSwitch_Click(object sender, RoutedEventArgs e)
+        {
+            HDPower = !HDPower;
+            if (!HDPower)
+            {
+                humidityControlerSwitch.Content = "已关机";
+            }
+            else
+            {
+                humidityControlerSwitch.Content = "正在运行";
+            }
+        }
+
+        private void humidity_higher_Click(object sender, RoutedEventArgs e)
+        {
+            if (HumidityExpValue >= 100)
+            {
+                return;
+            }
+            HumidityExpValue += 10;
+            humidityExpect.Content = string.Format("{0}%", HumidityExpValue);
+        }
+
+        private void airCleanerSwitch_Click(object sender, RoutedEventArgs e)
+        {
+            ACPower = !ACPower;
+            if (!ACPower)
+            {
+                airCleanerSwitch.Content = "已关机";
+            }
+            else
+            {
+                airCleanerSwitch.Content = "正在运行";
+            }
         }
     }
 }

@@ -5,79 +5,132 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Scheduler"
         mc:Ignorable="d"
-        Title="RTX温湿度调度器" Height="500" Width="800">
+        Title="RTX 调度器" Height="600" Width="1280" MinWidth="1000" MinHeight="600" Icon="/诺耶拉-icon.png" Closing="Window_Closing">
     <Window.Background>
         <ImageBrush ImageSource="/ocean.jpg" Stretch="UniformToFill"/>
     </Window.Background>
     <Grid>
-        <TabControl Width="800" Height="500">
+        <TabControl Margin="40,30,40,20" BorderBrush="{x:Null}">
             <TabControl.Background>
                 <ImageBrush/>
             </TabControl.Background>
-            <TabItem Header="首页" Style="{DynamicResource DefaultTabItemStyle}" Foreground="#FFF6F7F4" Margin="0,-2,-18,0" Width="50" Height="25" HorizontalAlignment="Left">
+            <TabItem Header="首页" Style="{DynamicResource DefaultTabItemStyle}" Foreground="#FFF6F7F4" Width="50" Height="25" HorizontalAlignment="Left" BorderBrush="{x:Null}">
                 <TabItem.Background>
                     <LinearGradientBrush>
-                        <GradientStop Color="#FFF0F0F0"/>
-                        <GradientStop Color="#7F151515" Offset="1"/>
+                        <GradientStop Color="Black"/>
+                        <GradientStop Color="#7F000000" Offset="1"/>
                     </LinearGradientBrush>
                 </TabItem.Background>
-                <Grid Width="760" Height="450">
-                    <Button Content="刷新" HorizontalAlignment="Left" Height="30" VerticalAlignment="Top" Width="100" Style="{DynamicResource DefaultButton}" Background="#66000000" Foreground="White" Click="Button_Click"/>
-                    <Grid HorizontalAlignment="Left" Height="180" Margin="70,0,0,0" VerticalAlignment="Center" Width="150" Background="#7FFFFFFF">
-                        <Button x:Name="Temp_lower" Content="-" Margin="0,150,100,0" Width="40" Height="30" Background="#7F000000" HorizontalAlignment="Left"/>
-                        <Label Content="温度：" FontSize="24" VerticalAlignment="Top" Height="60"/>
-                        <Button x:Name="Temp_higher" Content="+" Width="40" Height="30" HorizontalAlignment="Right" Background="#7F040404" Margin="0,150,0,0"/>
-                        <Button x:Name="Power_on_off" Content="On/Off" Width="70" Height="30" Margin="0,150,0,0" HorizontalAlignment="Center" Background="{x:Null}" VerticalAlignment="Top"/>
-                        <Button x:Name="Wind_Speed" Content="风速" HorizontalAlignment="Left" Height="45" VerticalAlignment="Top" Width="75" Margin="0,105,0,0" BorderBrush="Transparent"/>
-                        <Button x:Name="Moudle_Sleep" Content="睡眠" HorizontalAlignment="Left" Height="45" VerticalAlignment="Top" Width="75" Margin="75,105,0,0" BorderBrush="{x:Null}"/>
-                        <Button x:Name="Stronger" Content="强劲" HorizontalAlignment="Left" Height="45" Margin="0,60,0,0" VerticalAlignment="Top" Width="75"/>
-                        <Button x:Name="Moudle" Content="模式" HorizontalAlignment="Left" Height="45" Margin="75,60,0,0" VerticalAlignment="Top" Width="75"/>
+                <Grid Background="#66000000">
+                    <Button Content="刷新" HorizontalAlignment="Left" Height="30" VerticalAlignment="Top" Width="100" Style="{DynamicResource DefaultButton}" Background="#66000000" Foreground="White" Click="RefreshButton_Click" BorderBrush="White" Margin="10,10,0,0"/>
+                    <Grid HorizontalAlignment="Left" Height="342" VerticalAlignment="Center" Width="150" Background="#7FFFFFFF" Margin="200,0,0,0">
+                        <Ellipse HorizontalAlignment="Center" Height="99" Margin="0,10,0,0" Stroke="White" VerticalAlignment="Top" Width="98" Fill="#CC9ADCFF"/>
+                        <Button x:Name="Temp_lower" Content="-" Width="40" Height="30" Background="#7F000000" HorizontalAlignment="Left" BorderBrush="White" Foreground="White" VerticalAlignment="Bottom" Style="{DynamicResource DefaultButton}" Click="Temp_lower_Click"/>
+                        <Label x:Name="temperatureExpect" Content="26°C" FontSize="24" VerticalAlignment="Bottom" Height="60" Width="75" HorizontalAlignment="Left" Margin="0,0,0,125" BorderThickness="1,0,1,1" BorderBrush="White" FontFamily="FZYaoTi" VerticalContentAlignment="Center" FontWeight="Bold"/>
+                        <Button x:Name="Temp_higher" Content="+" Width="40" Height="30" HorizontalAlignment="Right" Background="#7F040404" BorderBrush="White" Foreground="White" VerticalAlignment="Bottom" Style="{DynamicResource DefaultButton}" Click="Temp_higher_Click"/>
+                        <Button x:Name="airConditionerSwitch" Content="已关机" Width="70" Height="30" HorizontalAlignment="Center" Background="{x:Null}" VerticalAlignment="Bottom" Click="airConditionerSwitch_Click"/>
+                        <Button x:Name="Wind_Speed" Content="风速" HorizontalAlignment="Left" Height="45" VerticalAlignment="Bottom" Width="75" BorderBrush="Transparent" Margin="0,0,0,75"/>
+                        <Button x:Name="Moudle_Sleep" Content="睡眠" HorizontalAlignment="Right" Height="45" VerticalAlignment="Bottom" Width="75" BorderBrush="{x:Null}" Margin="0,0,0,75"/>
+                        <Button x:Name="Stronger" Content="强劲" HorizontalAlignment="Left" Height="45" VerticalAlignment="Bottom" Width="75" BorderBrush="{x:Null}" Margin="0,0,0,30"/>
+                        <Button x:Name="Moudle" Content="模式" HorizontalAlignment="Right" Height="45" VerticalAlignment="Bottom" Width="75" BorderBrush="{x:Null}" Margin="0,0,0,30"/>
+                        <Label x:Name="tempratureEnv" Content="26°C" FontSize="24" VerticalAlignment="Bottom" Height="60" Width="75" HorizontalAlignment="Right" Margin="0,0,0,125" BorderThickness="1,0,1,1" BorderBrush="White" FontFamily="FZYaoTi" VerticalContentAlignment="Center" FontWeight="Bold"/>
+                        <Image Margin="45,26,0,0" Source="/温度.png" Stretch="Fill" Width="65" Height="66" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                        <Label Content="设定温度" FontSize="16" VerticalAlignment="Bottom" Height="30" Width="75" HorizontalAlignment="Left" Margin="0,0,0,185" BorderBrush="White" BorderThickness="1,1,1,0">
+                            <Label.Foreground>
+                                <LinearGradientBrush EndPoint="1,1" StartPoint="0,0">
+                                    <GradientStop Color="#FF00A0FF"/>
+                                    <GradientStop Color="#FF01596B" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Label.Foreground>
+                        </Label>
+                        <Label Content="环境温度" FontSize="16" VerticalAlignment="Bottom" Height="30" Width="75" HorizontalAlignment="Right" Margin="0,0,0,185" BorderThickness="1,1,1,0" BorderBrush="White">
+                            <Label.Foreground>
+                                <LinearGradientBrush EndPoint="1,1" StartPoint="0,0">
+                                    <GradientStop Color="#FF00A0FF"/>
+                                    <GradientStop Color="#FF01596B" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Label.Foreground>
+                        </Label>
                     </Grid>
-                    <Ellipse HorizontalAlignment="Left" Height="99" Margin="96,15,0,0" Stroke="White" VerticalAlignment="Top" Width="98" Fill="#CC9ADCFF"/>
-                    <Image Margin="116,33,0,0" Source="/温度.png" Stretch="Fill" Width="65" Height="66" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-                    <Ellipse HorizontalAlignment="Left" Height="99" Margin="344,15,0,0" Stroke="#FFFDFDFD" VerticalAlignment="Top" Width="99" Fill="#CC76CDF9"/>
-                    <Grid HorizontalAlignment="Left" Height="180" Margin="318,0,0,0" VerticalAlignment="Center" Width="150" Background="#7FFBFAFA">
-                        <Label Content="湿度：" HorizontalAlignment="Center" Height="60" Margin="0,3,0,0" VerticalAlignment="Top" Width="150" FontSize="24"/>
-                        <Button x:Name="humidity_lower" Content="-" HorizontalAlignment="Left" Height="30" Margin="0,151,0,0" VerticalAlignment="Top" Width="40" Background="#7F000000"/>
-                        <Button x:Name="humidity_higher" Content="+" HorizontalAlignment="Left" Height="30" Margin="110,151,0,0" VerticalAlignment="Top" Width="40" Background="#7F000000"/>
-                        <Button x:Name="humidity_On_Off" Content="On/Off" HorizontalAlignment="Center" Height="30" Margin="0,151,0,0" VerticalAlignment="Top" Width="70" Background="{x:Null}"/>
-                        <Button x:Name="monitor" Content="监测" HorizontalAlignment="Left" Height="45" Margin="0,106,0,0" VerticalAlignment="Top" Width="75" Background="#FFDDDDDD"/>
-                        <Button x:Name="Module_humidity" Content="模式" HorizontalAlignment="Left" Height="45" Margin="76,106,0,0" VerticalAlignment="Top" Width="75"/>
-                        <Button x:Name="yi_jian_pei_shi" Content="一键配适" HorizontalAlignment="Center" Height="45" Margin="0,61,0,0" VerticalAlignment="Top" Width="150"/>
-                    </Grid>
-                    <Image Margin="359,28,0,0" Source="/湿度.png" Stretch="Fill" Width="68" Height="71" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-                    <Button x:Name="more_setting" Content="更多" HorizontalAlignment="Left" Height="55" Margin="629,368,0,0" VerticalAlignment="Top" Width="135" Background="#7F00807E"/>
-                    <Ellipse HorizontalAlignment="Left" Height="100" Margin="575,12,0,0" Stroke="White" VerticalAlignment="Top" Width="99" Fill="#CCA1FFA9"/>
-                    <Image Margin="594,15,101,345" Source="/空气质量.png" Stretch="Fill"/>
-                    <Grid HorizontalAlignment="Left" Height="180" Margin="565,0,0,0" VerticalAlignment="Center" Width="150" Background="#7FFFFFFF">
-                        <Label Content="空气指数：" HorizontalAlignment="Left" Height="60" Margin="3,4,0,0" VerticalAlignment="Top" Width="150" FontSize="20"/>
-                        <Button x:Name="speed_down" Content="-" HorizontalAlignment="Left" Height="30" Margin="1,150,0,0" VerticalAlignment="Top" Width="40" Background="#7F000000"/>
-                        <Button x:Name="speed_up" Content="+" HorizontalAlignment="Left" Height="30" Margin="110,150,0,0" VerticalAlignment="Top" Width="40" Background="#7F000000"/>
-                        <Button x:Name="speed_control" Content="On/Off" HorizontalAlignment="Center" Height="30" Margin="0,150,0,0" VerticalAlignment="Top" Width="70" Background="{x:Null}"/>
-                        <Button x:Name="yi_jian_qing_xin" Content="一键清新" HorizontalAlignment="Left" Height="45" Margin="0,105,0,0" VerticalAlignment="Top" Width="75"/>
-                        <Button x:Name="xun_huan" Content="循环风" HorizontalAlignment="Left" Height="45" Margin="75,105,0,0" VerticalAlignment="Top" Width="75"/>
-                        <Button x:Name="clear" Content="除味" HorizontalAlignment="Left" Height="45" Margin="0,60,0,0" VerticalAlignment="Top" Width="75"/>
-                        <Button x:Name="tongferng" Content="通风" HorizontalAlignment="Left" Height="45" Margin="75,60,0,0" VerticalAlignment="Top" Width="75"/>
-                    </Grid>
-                </Grid>
-            </TabItem>
-            <TabItem Header="设置" Style="{DynamicResource DefaultTabItemStyle}" Margin="4,-1,0,1" Width="50" Height="25" HorizontalAlignment="Left" Foreground="#FFFDFDFD" Background="#7FFFFFFF">
-                <Grid>
-                    <Grid.Background>
-                        <ImageBrush ImageSource="/背景图.jpg" Stretch="UniformToFill"/>
-                    </Grid.Background>
-                    <ListBox HorizontalAlignment="Left" Height="300" VerticalAlignment="Top" Width="170" Margin="82,100,0,0" VerticalContentAlignment="Stretch" HorizontalContentAlignment="Center" Background="{x:Null}" BorderBrush="{x:Null}">
-                        <Button x:Name="personal" Content="个性设置" Height="45" Width="120" Background="#FFAFAFAF" />
-                        <Button x:Name="ui_srtting" Content="界面设置"  Height="45" VerticalAlignment="Top" Width="120" Background="#FFAFAFAF" />
-                        <Button x:Name="setting" Content="系统设置"  Height="45" VerticalAlignment="Top" Width="120" Background="#FFAFAFAF" />
-                        <Button x:Name="about_us" Content="关于我们" Height="45" Width="120" Background="#FFAFAFAF" />
-                    </ListBox>
 
-                    <Button x:Name="more" Content="更多" HorizontalAlignment="Left" Height="55" Margin="630,381,0,0" VerticalAlignment="Top" Width="135" Background="#FFA5A5A5" FontSize="20" OpacityMask="White" Foreground="#FFFBF7F7"/>
+                    <Grid HorizontalAlignment="Center" Height="343" Margin="-100,0,-100,0" VerticalAlignment="Center" Width="150" Background="#7FFBFAFA">
+                        <Ellipse HorizontalAlignment="Center" Height="99" Stroke="#FFFDFDFD" VerticalAlignment="Top" Width="98" Fill="#CC76CDF9" Margin="0,10,0,0"/>
+                        <Image Margin="0,22,0,0" Source="/湿度.png" Stretch="Fill" Width="68" Height="71" HorizontalAlignment="Center" VerticalAlignment="Top"/>
+                        <Label x:Name="humidityExpect" Content="50%" Height="60" VerticalAlignment="Bottom" Width="75" FontSize="24" HorizontalAlignment="Left" Margin="0,0,0,125" BorderBrush="White" BorderThickness="1,0,1,1" FontFamily="FZYaoTi" FontWeight="Bold" VerticalContentAlignment="Center"/>
+                        <Button x:Name="humidity_lower" Content="-" HorizontalAlignment="Left" Height="30" VerticalAlignment="Bottom" Width="40" Background="#7F000000" BorderBrush="White" Foreground="White" Style="{DynamicResource DefaultButton}" Click="humidity_lower_Click"/>
+                        <Button x:Name="humidity_higher" Content="+" HorizontalAlignment="Right" Height="30" VerticalAlignment="Bottom" Width="40" Background="#7F000000" BorderBrush="White" Foreground="White" Style="{DynamicResource DefaultButton}" Click="humidity_higher_Click"/>
+                        <Button x:Name="humidityControlerSwitch" Content="已关机" HorizontalAlignment="Center" Height="30" VerticalAlignment="Bottom" Width="70" Background="{x:Null}" Click="humidityControlerSwitch_Click"/>
+                        <Button x:Name="monitor" Content="监测" HorizontalAlignment="Left" Height="45" VerticalAlignment="Bottom" Width="75" Background="#FFDDDDDD" BorderBrush="{x:Null}" Margin="0,0,0,30"/>
+                        <Button x:Name="Module_humidity" Content="模式" HorizontalAlignment="Right" Height="45" VerticalAlignment="Bottom" Width="75" BorderBrush="{x:Null}" Margin="0,0,0,30"/>
+                        <Button x:Name="yi_jian_pei_shi" Content="一键配适" HorizontalAlignment="Center" Height="45" VerticalAlignment="Bottom" Width="150" BorderBrush="{x:Null}" Margin="0,0,0,75"/>
+                        <Label x:Name="humidityEnv" Content="50%" Height="60" VerticalAlignment="Bottom" Width="75" FontSize="24" HorizontalAlignment="Right" Margin="0,0,0,125" BorderBrush="White" BorderThickness="1,0,1,1" VerticalContentAlignment="Center" FontFamily="FZYaoTi" FontWeight="Bold"/>
+                        <Label Content="设定湿度" Height="30" VerticalAlignment="Bottom" Width="75" FontSize="16" HorizontalAlignment="Left" Margin="0,0,0,185" BorderThickness="1,1,1,0" BorderBrush="White">
+                            <Label.Foreground>
+                                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                    <GradientStop Color="#FF088C95" Offset="1"/>
+                                    <GradientStop Color="#FF01596B" Offset="0"/>
+                                </LinearGradientBrush>
+                            </Label.Foreground>
+                        </Label>
+                        <Label Content="环境湿度" Height="30" VerticalAlignment="Bottom" Width="75" FontSize="16" HorizontalAlignment="Right" Margin="0,0,0,185" HorizontalContentAlignment="Right" BorderThickness="1,1,1,0" BorderBrush="White">
+                            <Label.Foreground>
+                                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                    <GradientStop Color="Black"/>
+                                    <GradientStop Color="#FF01596B" Offset="0"/>
+                                </LinearGradientBrush>
+                            </Label.Foreground>
+                        </Label>
+                    </Grid>
+
+                    <Button x:Name="more_setting" Content="更多" HorizontalAlignment="Right" Height="30" VerticalAlignment="Bottom" Width="100" Background="#7F000000" Foreground="White" BorderBrush="White" Margin="0,0,10,10" Style="{DynamicResource DefaultButton}"/>
+
+                    <Grid HorizontalAlignment="Right" Height="342" VerticalAlignment="Center" Width="150" Background="#7FFFFFFF" Margin="0,0,200,0">
+                        <Ellipse HorizontalAlignment="Center" Height="100" Margin="2,10,0,0" Stroke="White" VerticalAlignment="Top" Width="99" Fill="#CCA1FFA9"/>
+                        <Image Margin="0,16,0,0" Source="/空气质量.png" Stretch="Fill" HorizontalAlignment="Center" VerticalAlignment="Top" Width="90" Height="90"/>
+                        <Label x:Name="airQuality" Content="1" Height="60" VerticalAlignment="Bottom" FontSize="24" Margin="0,0,0,125" BorderBrush="White" BorderThickness="1,0,1,1" FontFamily="FZYaoTi" FontWeight="Bold" VerticalContentAlignment="Center"/>
+                        <Button x:Name="speed_down" Content="-" HorizontalAlignment="Left" Height="30" Margin="1,150,0,0" VerticalAlignment="Bottom" Width="40" Background="#7F000000" BorderBrush="White" Foreground="White" Style="{DynamicResource DefaultButton}"/>
+                        <Button x:Name="speed_up" Content="+" HorizontalAlignment="Left" Height="30" Margin="110,150,0,0" VerticalAlignment="Bottom" Width="40" Background="#7F000000" Foreground="White" BorderBrush="White" Style="{DynamicResource DefaultButton}"/>
+                        <Button x:Name="airCleanerSwitch" Content="已关机" HorizontalAlignment="Center" Height="30" Margin="0,150,0,0" VerticalAlignment="Bottom" Width="70" Background="{x:Null}" VerticalContentAlignment="Center" Click="airCleanerSwitch_Click"/>
+                        <Button x:Name="yi_jian_qing_xin" Content="一键清新" HorizontalAlignment="Left" Height="45" VerticalAlignment="Bottom" Width="75" Margin="0,0,0,30" BorderBrush="{x:Null}"/>
+                        <Button x:Name="xun_huan" Content="循环风" HorizontalAlignment="Right" Height="45" VerticalAlignment="Bottom" Width="75" Margin="0,0,0,30" BorderBrush="{x:Null}"/>
+                        <Button x:Name="clear" Content="除味" HorizontalAlignment="Left" Height="45" VerticalAlignment="Bottom" Width="75" Margin="0,0,0,75" BorderBrush="{x:Null}"/>
+                        <Button x:Name="tongferng" Content="通风" HorizontalAlignment="Right" Height="45" VerticalAlignment="Bottom" Width="75" Margin="0,0,0,75" BorderBrush="{x:Null}"/>
+                        <Label Content="环境空气指数：" Height="30" VerticalAlignment="Bottom" FontSize="16" Margin="0,0,0,185" BorderBrush="White" BorderThickness="1,1,1,0">
+                            <Label.Foreground>
+                                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                    <GradientStop Color="Black"/>
+                                    <GradientStop Color="#FF00494F" Offset="0"/>
+                                </LinearGradientBrush>
+                            </Label.Foreground>
+                        </Label>
+                    </Grid>
                 </Grid>
             </TabItem>
+            <TabItem Header="设置" Style="{DynamicResource DefaultTabItemStyle}" Width="50" Height="25" HorizontalAlignment="Left" Foreground="#FFFDFDFD" Margin="2,-2,0,0">
+                <TabItem.Background>
+                    <LinearGradientBrush>
+                        <GradientStop Color="Black"/>
+                        <GradientStop Color="#7F000000" Offset="1"/>
+                    </LinearGradientBrush>
+                </TabItem.Background>
+                <Grid Background="#66000000">
+                    <Button x:Name="more" Content="更多" HorizontalAlignment="Right" Height="45" Margin="0,0,10,10" VerticalAlignment="Bottom" Width="120" Background="#99000000" FontSize="18" Foreground="#FFFBF7F7" BorderBrush="White" Style="{DynamicResource DefaultButton}"/>
+                    <StackPanel HorizontalAlignment="Center" Height="210" VerticalAlignment="Center" Width="270" Margin="0,0,700,0">
+                        <Button x:Name="ui_srtting" Content="界面设置"  Height="45" Width="120" BorderBrush="White" Foreground="White" Background="#99000000" Margin="0,5,0,0" Style="{DynamicResource DefaultButton}" />
+                        <Button x:Name="personal" Content="个性设置" Height="45" Width="120" BorderBrush="White" Foreground="White" Background="#99000000" Margin="0,5,0,0" Style="{DynamicResource DefaultButton}" />
+                        <Button x:Name="setting" Content="系统设置"  Height="45" Width="120" BorderBrush="White" Foreground="White" Background="#99000000" Margin="0,5,0,0" Style="{DynamicResource DefaultButton}" />
+                        <Button x:Name="about_us" Content="关于我们" Height="45" Width="120" BorderBrush="White" Foreground="White" Background="#99000000" Margin="0,5,0,0" Style="{DynamicResource DefaultButton}" />
+                    </StackPanel>
+                    <TextBox x:Name="serverLog" Height="322" Margin="0,0,70,0" TextWrapping="Wrap" Text="" VerticalAlignment="Center" Background="#99000000" Foreground="White" HorizontalAlignment="Right" Width="622" BorderBrush="White" SelectionTextBrush="#CC000000" AllowDrop="False" IsReadOnly="True"/>
+                    <Label Content="#服务器日志" HorizontalAlignment="Right" Height="50" Margin="0,0,547,380" VerticalAlignment="Center" Width="145" Foreground="White" FontSize="22" FontWeight="Bold" VerticalContentAlignment="Center"/>
+                </Grid>
+            </TabItem>
+
         </TabControl>
-        <Image Margin="732,0,10,436" Source="/WIFI.png" Stretch="Fill"/>
+        <Image Height="40" Source="/sensorIco.png" Width="50" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,10,160,0"/>
+        <Image Source="/WIFI.png" Height="55" Width="55" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+        <Label x:Name="netState" Content="连接异常" HorizontalAlignment="Right" Height="35" Margin="0,10,60,0" VerticalAlignment="Top" Width="100" VerticalContentAlignment="Center" HorizontalContentAlignment="Right" Padding="5,0,5,0" FontSize="16" Foreground="Red"/>
+        <Label x:Name="sensorState" Content="传感器离线" HorizontalAlignment="Right" Height="35" Margin="0,10,205,0" VerticalAlignment="Top" Width="135" VerticalContentAlignment="Center" HorizontalContentAlignment="Right" Padding="5,0,5,0" FontSize="16" Foreground="Red"/>
 
     </Grid>
 </Window>

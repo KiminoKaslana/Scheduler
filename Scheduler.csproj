@@ -11,6 +11,7 @@
   <ItemGroup>
     <None Remove="background.png" />
     <None Remove="ocean.jpg" />
+    <None Remove="sensorIco.png" />
     <None Remove="star.jpg" />
     <None Remove="WIFI.png" />
     <None Remove="温度.png" />
@@ -19,11 +20,17 @@
     <None Remove="空气质量.png" />
     <None Remove="背景图.jpg" />
     <None Remove="蓝牙.png" />
+    <None Remove="诺耶拉-icon.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.IO.Ports" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <Resource Include="background.png" />
     <Resource Include="ocean.jpg" />
+    <Resource Include="sensorIco.png" />
     <Resource Include="star.jpg" />
     <Resource Include="WIFI.png" />
     <Resource Include="湿度.png" />
@@ -35,6 +42,7 @@
     <Resource Include="空气质量.png" />
     <Resource Include="背景图.jpg" />
     <Resource Include="蓝牙.png" />
+    <Resource Include="诺耶拉-icon.png" />
   </ItemGroup>
 
 </Project>

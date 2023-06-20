@@ -8,8 +8,10 @@ namespace Scheduler
 {
     class SensorDatas
     {
-        public int Humidity = 0;
-        public int Temperature = 0;
-        public int AirQuality = 0;
+        public static SensorDatas? instance = null;
+        public bool IsDataValid { get; set; } = false;
+        public double Humidity { get; set; } = 0;
+        public double Temperature { get; set; } = 0;
+        public int AirQuality { get; set; } = 0;
     }
 }
