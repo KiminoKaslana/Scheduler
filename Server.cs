@@ -111,8 +111,11 @@ namespace Scheduler
                             SendData(sender as Socket, SensorDatas.instance);
                             break;
                         default:
+                            LogLine("无效命令：{0}", message);
                             break;
                     }
+
+                    (sender as Socket)?.ReceiveAsync(e);
                 }
                 else
                 {

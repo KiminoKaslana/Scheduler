@@ -65,14 +65,14 @@ namespace Scheduler
                     sensorState.Foreground = new SolidColorBrush(Color.FromRgb(0, 0, 0));
                     foreach (var item in arduionPortList)
                     {
-                        if (GetRawData(item, out string raws))
-                        {
-                            RawHandler(raws);
-                        }
-
                         try
                         {
-                            item.WriteLine("GetData");
+                            if (GetRawData(item, out string raws))
+                            {
+                                RawHandler(raws);
+                            }                 
+                            
+                            item.WriteLine("GetData");//写在后面，是利用刷新间隔来等待数据进入缓冲区
                         }
                         catch (Exception e)
                         {
@@ -128,7 +128,7 @@ namespace Scheduler
                     serialPort.Open();
                     Trace.WriteLine("端口已打开");
                     serialPort.WriteLine("GetArduino"); // 向Arduino发送一条消息
-                    string response = serialPort.ReadExisting(); // 读取来自Arduino的响应
+                    string response = serialPort.ReadLine(); // 读取来自Arduino的响应
                     if (response.Contains("Arduino")) // 检查响应是否包含"Arduino"字样
                     {
                         Trace.WriteLine("Arduino已连接到" + port);
@@ -154,16 +154,18 @@ namespace Scheduler
         {
             try
             {
-                string raw = port.ReadExisting().Trim();
+                string raw = port.ReadExisting();
                 if (raw.Contains(':'))
                 {
                     rawString = raw;
+                    return true;
                 }
                 else
                 {
                     rawString = "";
+                    return false;
                 }
-                return raw != "";
+                
             }
             catch (Exception e)
             {
@@ -198,10 +200,10 @@ namespace Scheduler
                             sensorDatas.Humidity = Convert.ToDouble(dataPair[1].Trim());
                             break;
                         case "Temperature":
-                            sensorDatas.Temperature = Convert.ToDouble(dataPair[1]);
+                            sensorDatas.Temperature = Convert.ToDouble(dataPair[1].Trim());
                             break;
                         case "AirQuality":
-                            sensorDatas.AirQuality = Convert.ToInt32(dataPair[1]);
+                            sensorDatas.AirQuality = Convert.ToInt32(dataPair[1].Trim());
                             break;
                         default:
                             break;
@@ -212,6 +214,7 @@ namespace Scheduler
                 }
                 catch (Exception e)
                 {
+                    Trace.WriteLine("error data:" + dataPair[1]);
                     Trace.WriteLine(e);
                 }
 
